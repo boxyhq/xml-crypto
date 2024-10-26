@@ -4,14 +4,15 @@ import * as xmldom from "@xmldom/xmldom";
 import * as fs from "fs";
 import { expect } from "chai";
 import * as isDomNode from "@xmldom/is-dom-node";
+import { MIME_TYPE } from "@xmldom/xmldom";
 
 describe("HMAC tests", function () {
   it("test validating HMAC signature", function () {
     const xml = fs.readFileSync("./test/static/hmac_signature.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const signature = xpath.select1(
       "/*/*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-      doc,
+      doc as any,
     );
     isDomNode.assertIsNodeLike(signature);
 
@@ -26,10 +27,10 @@ describe("HMAC tests", function () {
 
   it("test HMAC signature with incorrect key", function () {
     const xml = fs.readFileSync("./test/static/hmac_signature.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const signature = xpath.select1(
       "/*/*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-      doc,
+      doc as any,
     );
     isDomNode.assertIsNodeLike(signature);
 
@@ -55,10 +56,10 @@ describe("HMAC tests", function () {
     sig.canonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#";
     sig.computeSignature(xml);
 
-    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml());
+    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml(), MIME_TYPE.XML_APPLICATION);
     const signature = xpath.select1(
       "/*/*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-      doc,
+      doc as any,
     );
     isDomNode.assertIsNodeLike(signature);
 

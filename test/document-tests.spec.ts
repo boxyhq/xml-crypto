@@ -4,14 +4,15 @@ import * as xmldom from "@xmldom/xmldom";
 import * as fs from "fs";
 import { expect } from "chai";
 import * as isDomNode from "@xmldom/is-dom-node";
+import { MIME_TYPE } from "@xmldom/xmldom";
 
 describe("Document tests", function () {
   it("test with a document (using FileKeyInfo)", function () {
     const xml = fs.readFileSync("./test/static/valid_saml.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const node = xpath.select1(
       "/*/*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-      doc,
+      doc as any,
     );
 
     isDomNode.assertIsNodeLike(node);
@@ -25,10 +26,10 @@ describe("Document tests", function () {
 
   it("test with a document (using StringKeyInfo)", function () {
     const xml = fs.readFileSync("./test/static/valid_saml.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const node = xpath.select1(
       "/*/*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-      doc,
+      doc as any,
     );
 
     isDomNode.assertIsNodeLike(node);
@@ -45,10 +46,10 @@ describe("Document tests", function () {
 describe("Validated node references tests", function () {
   it("should return references if the document is validly signed", function () {
     const xml = fs.readFileSync("./test/static/valid_saml.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const sig = new SignedXml();
     sig.getCertFromKeyInfo = SignedXml.getCertFromKeyInfo;
-    sig.loadSignature(sig.findSignatures(doc)[0]);
+    sig.loadSignature(sig.findSignatures(doc as any)[0]);
     const validSignature = sig.checkSignature(xml);
     expect(validSignature).to.be.true;
 
@@ -59,9 +60,9 @@ describe("Validated node references tests", function () {
 
   it("should not return references if the document is not validly signed", function () {
     const xml = fs.readFileSync("./test/static/invalid_signature - changed content.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const sig = new SignedXml();
-    sig.loadSignature(sig.findSignatures(doc)[0]);
+    sig.loadSignature(sig.findSignatures(doc as any)[0]);
     const validSignature = sig.checkSignature(xml);
     expect(validSignature).to.be.false;
 
@@ -72,10 +73,10 @@ describe("Validated node references tests", function () {
 
   it("should return `null` if the selected node isn't found", function () {
     const xml = fs.readFileSync("./test/static/valid_saml.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const sig = new SignedXml();
     sig.getCertFromKeyInfo = SignedXml.getCertFromKeyInfo;
-    sig.loadSignature(sig.findSignatures(doc)[0]);
+    sig.loadSignature(sig.findSignatures(doc as any)[0]);
     const validSignature = sig.checkSignature(xml);
     expect(validSignature).to.be.true;
 
@@ -86,10 +87,10 @@ describe("Validated node references tests", function () {
 
   it("should return the selected node if it is validly signed", function () {
     const xml = fs.readFileSync("./test/static/valid_saml.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const sig = new SignedXml();
     sig.getCertFromKeyInfo = SignedXml.getCertFromKeyInfo;
-    sig.loadSignature(sig.findSignatures(doc)[0]);
+    sig.loadSignature(sig.findSignatures(doc as any)[0]);
     const validSignature = sig.checkSignature(xml);
     expect(validSignature).to.be.true;
 
@@ -102,9 +103,9 @@ describe("Validated node references tests", function () {
 
   it("should return `null` if the selected node isn't validly signed", function () {
     const xml = fs.readFileSync("./test/static/invalid_signature - changed content.xml", "utf-8");
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     const sig = new SignedXml();
-    sig.loadSignature(sig.findSignatures(doc)[0]);
+    sig.loadSignature(sig.findSignatures(doc as any)[0]);
     const validSignature = sig.checkSignature(xml);
     expect(validSignature).to.be.false;
 

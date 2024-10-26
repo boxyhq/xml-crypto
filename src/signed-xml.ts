@@ -24,6 +24,7 @@ import * as hashAlgorithms from "./hash-algorithms";
 import * as signatureAlgorithms from "./signature-algorithms";
 import * as crypto from "crypto";
 import * as isDomNode from "@xmldom/is-dom-node";
+import { MIME_TYPE } from "@xmldom/xmldom";
 
 export class SignedXml {
   idMode?: "wssecurity";
@@ -251,9 +252,9 @@ export class SignedXml {
 
     this.signedXml = xml;
 
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
 
-    if (!this.getReferences().every((ref) => this.validateReference(ref, doc))) {
+    if (!this.getReferences().every((ref) => this.validateReference(ref, doc as any))) {
       if (callback) {
         callback(new Error("Could not validate all references"));
         return;
@@ -262,7 +263,7 @@ export class SignedXml {
       return false;
     }
 
-    const signedInfoCanon = this.getCanonSignedInfoXml(doc);
+    const signedInfoCanon = this.getCanonSignedInfoXml(doc as any);
     const signer = this.findSignatureAlgorithm(this.signatureAlgorithm);
     const key = this.getCertFromKeyInfo(this.keyInfo) || this.publicCert || this.privateKey;
     if (key == null) {
@@ -494,7 +495,7 @@ export class SignedXml {
    */
   loadSignature(signatureNode: Node | string): void {
     if (typeof signatureNode === "string") {
-      this.signatureNode = signatureNode = new xmldom.DOMParser().parseFromString(signatureNode);
+      this.signatureNode = signatureNode = new xmldom.DOMParser().parseFromString(signatureNode, MIME_TYPE.XML_APPLICATION) as any as Document;
     } else {
       this.signatureNode = signatureNode;
     }
@@ -744,7 +745,7 @@ export class SignedXml {
       options = (options ?? {}) as ComputeSignatureOptions;
     }
 
-    const doc = new xmldom.DOMParser().parseFromString(xml);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
     let xmlNsAttr = "xmlns";
     const signatureAttrs: string[] = [];
     let currentPrefix: string;
@@ -814,13 +815,13 @@ export class SignedXml {
     // A trick to remove the namespaces that already exist in the xml
     // This only works if the prefix and namespace match with those in the xml
     const dummySignatureWrapper = `<Dummy ${existingPrefixesString}>${signatureXml}</Dummy>`;
-    const nodeXml = new xmldom.DOMParser().parseFromString(dummySignatureWrapper);
+    const nodeXml = new xmldom.DOMParser().parseFromString(dummySignatureWrapper, MIME_TYPE.XML_APPLICATION) as any as Document;
 
     // Because we are using a dummy wrapper hack described above, we know there will be a `firstChild`
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const signatureDoc = nodeXml.documentElement.firstChild!;
 
-    const referenceNode = xpath.select1(location.reference, doc);
+    const referenceNode = xpath.select1(location.reference, doc as any);
 
     if (!isDomNode.isNodeLike(referenceNode)) {
       const err2 = new Error(
@@ -869,7 +870,7 @@ export class SignedXml {
 
     if (typeof callback === "function") {
       // Asynchronous flow
-      this.calculateSignatureValue(doc, (err, signature) => {
+      this.calculateSignatureValue(doc as any, (err, signature) => {
         if (err) {
           callback(err);
         } else {
@@ -882,7 +883,7 @@ export class SignedXml {
       });
     } else {
       // Synchronous flow
-      this.calculateSignatureValue(doc);
+      this.calculateSignatureValue(doc as any);
       signatureDoc.insertBefore(this.createSignature(prefix), signedInfoNode.nextSibling);
       this.signatureXml = signatureDoc.toString();
       this.signedXml = doc.toString();
@@ -1091,7 +1092,7 @@ export class SignedXml {
     //we need to wrap the info in a dummy signature since it contains the default namespace.
     const dummySignatureWrapper = `<${prefix}Signature ${xmlNsAttr}="http://www.w3.org/2000/09/xmldsig#">${signatureValueXml}</${prefix}Signature>`;
 
-    const doc = new xmldom.DOMParser().parseFromString(dummySignatureWrapper);
+    const doc = new xmldom.DOMParser().parseFromString(dummySignatureWrapper, MIME_TYPE.XML_APPLICATION) as any as Document;
 
     // Because we are using a dummy wrapper hack described above, we know there will be a `firstChild`
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

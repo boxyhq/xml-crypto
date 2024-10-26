@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as crypto from "crypto";
 import { expect } from "chai";
 import * as isDomNode from "@xmldom/is-dom-node";
+import { MIME_TYPE } from "@xmldom/xmldom";
 
 describe("Signature unit tests", function () {
   describe("verify adds ID", function () {
@@ -42,7 +43,7 @@ describe("Signature unit tests", function () {
       sig.signatureAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
       sig.computeSignature(xml);
       const signedXml = sig.getOriginalXmlWithIds();
-      const doc = new xmldom.DOMParser().parseFromString(signedXml);
+      const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION);
 
       const op = nsMode === "equal" ? "=" : "!=";
 
@@ -85,8 +86,8 @@ describe("Signature unit tests", function () {
     });
 
     const signedXml = sig.getSignatureXml();
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
-    const references = xpath.select("//*[local-name(.)='Reference']", doc);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION);
+    const references = xpath.select("//*[local-name(.)='Reference']", doc as any);
     isDomNode.assertIsArrayOfNodes(references);
     expect(references.length).to.equal(2);
   });
@@ -105,8 +106,8 @@ describe("Signature unit tests", function () {
       sig.signatureAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
       sig.computeSignature(xml);
       const signedXml = sig.getOriginalXmlWithIds();
-      const doc = new xmldom.DOMParser().parseFromString(signedXml);
-      const attrs = xpath.select("//@*", doc);
+      const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION);
+      const attrs = xpath.select("//@*", doc as any);
       isDomNode.assertIsArrayOfNodes(attrs);
       expect(attrs.length, "wrong number of attributes").to.equal(2);
     }
@@ -144,7 +145,7 @@ describe("Signature unit tests", function () {
     });
 
     const signedXml = sig.getSignatureXml();
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const signatureNode = doc.documentElement;
 
     expect(attrs.Id, `Id attribute is not equal to the expected value: "${attrs.Id}"`).to.equal(
@@ -177,7 +178,7 @@ describe("Signature unit tests", function () {
     sig.signatureAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
     sig.computeSignature(xml);
 
-    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml());
+    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml(), MIME_TYPE.XML_APPLICATION) as any as Document;
 
     const lastChild = doc.documentElement.lastChild;
     isDomNode.assertIsElementNode(lastChild);
@@ -207,8 +208,8 @@ describe("Signature unit tests", function () {
       },
     });
 
-    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml());
-    const referenceNode = xpath.select1("/root/name", doc);
+    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml(), MIME_TYPE.XML_APPLICATION);
+    const referenceNode = xpath.select1("/root/name", doc as any);
 
     isDomNode.assertIsNodeLike(referenceNode);
     const lastChild = referenceNode.lastChild;
@@ -239,8 +240,8 @@ describe("Signature unit tests", function () {
       },
     });
 
-    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml());
-    const referenceNode = xpath.select1("/root/name", doc);
+    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml(), MIME_TYPE.XML_APPLICATION);
+    const referenceNode = xpath.select1("/root/name", doc as any);
     isDomNode.assertIsNodeLike(referenceNode);
     const firstChild = referenceNode.firstChild;
 
@@ -270,8 +271,8 @@ describe("Signature unit tests", function () {
       },
     });
 
-    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml());
-    const referenceNode = xpath.select1("/root/name", doc);
+    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml(), MIME_TYPE.XML_APPLICATION);
+    const referenceNode = xpath.select1("/root/name", doc as any);
     isDomNode.assertIsNodeLike(referenceNode);
     const previousSibling = referenceNode.previousSibling;
 
@@ -302,8 +303,8 @@ describe("Signature unit tests", function () {
       },
     });
 
-    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml());
-    const referenceNode = xpath.select1("/root/name", doc);
+    const doc = new xmldom.DOMParser().parseFromString(sig.getSignedXml(), MIME_TYPE.XML_APPLICATION);
+    const referenceNode = xpath.select1("/root/name", doc as any);
 
     isDomNode.assertIsNodeLike(referenceNode);
     const nextSibling = referenceNode.nextSibling;
@@ -782,10 +783,10 @@ describe("Signature unit tests", function () {
     describe("pass loading signatures", function () {
       function passLoadSignature(file: string, toString?: boolean) {
         const xml = fs.readFileSync(file, "utf8");
-        const doc = new xmldom.DOMParser().parseFromString(xml);
+        const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION) as any as Document;
         const signature = xpath.select1(
           "/*//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-          doc,
+          doc as any,
         );
         isDomNode.assertIsElementNode(signature);
         const sig = new SignedXml();
@@ -858,10 +859,10 @@ describe("Signature unit tests", function () {
 
     describe("pass verify signature", function () {
       function verifySignature(xml: string, idMode?: "wssecurity") {
-        const doc = new xmldom.DOMParser().parseFromString(xml);
+        const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
         const node = xpath.select1(
           "//*[local-name(.)='Signature' and namespace-uri(.)='http://www.w3.org/2000/09/xmldsig#']",
-          doc,
+          doc as any,
         );
         isDomNode.assertIsNodeLike(node);
         const sig = new SignedXml({ idMode });
@@ -986,7 +987,7 @@ describe("Signature unit tests", function () {
     sig.signatureAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const URI = xpath.select1("//*[local-name(.)='Reference']/@URI", doc);
     isDomNode.assertIsAttributeNode(URI);
     expect(URI.value, `uri should be empty but instead was ${URI.value}`).to.equal("");
@@ -1079,7 +1080,7 @@ describe("Signature unit tests", function () {
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
 
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const inclusiveNamespaces = xpath.select(
       "//*[local-name(.)='Reference']/*[local-name(.)='Transforms']/*[local-name(.)='Transform']/*[local-name(.)='InclusiveNamespaces']",
       doc.documentElement,
@@ -1116,7 +1117,7 @@ describe("Signature unit tests", function () {
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
 
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const inclusiveNamespaces = xpath.select1(
       "//*[local-name(.)='Reference']/*[local-name(.)='Transforms']/*[local-name(.)='Transform']/*[local-name(.)='InclusiveNamespaces']",
       doc.documentElement,
@@ -1141,7 +1142,7 @@ describe("Signature unit tests", function () {
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
 
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const inclusiveNamespaces = xpath.select(
       "//*[local-name(.)='CanonicalizationMethod']/*[local-name(.)='InclusiveNamespaces']",
       doc.documentElement,
@@ -1180,7 +1181,7 @@ describe("Signature unit tests", function () {
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
 
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const inclusiveNamespaces = xpath.select1(
       "//*[local-name(.)='CanonicalizationMethod']/*[local-name(.)='InclusiveNamespaces']",
       doc.documentElement,
@@ -1207,7 +1208,7 @@ describe("Signature unit tests", function () {
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
 
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
     const keyInfoElements = xpath.select("//*[local-name(.)='KeyInfo']", doc.documentElement);
 
     isDomNode.assertIsArrayOfNodes(keyInfoElements);
@@ -1239,7 +1240,7 @@ describe("Signature unit tests", function () {
     sig.computeSignature(xml);
     const signedXml = sig.getSignedXml();
 
-    const doc = new xmldom.DOMParser().parseFromString(signedXml);
+    const doc = new xmldom.DOMParser().parseFromString(signedXml, MIME_TYPE.XML_APPLICATION) as any as Document;
 
     const x509certificates = xpath.select(
       "//*[local-name(.)='X509Certificate']",

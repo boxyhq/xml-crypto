@@ -5,9 +5,10 @@ import * as xmldom from "@xmldom/xmldom";
 import * as xpath from "xpath";
 import * as utils from "../src/utils";
 import * as isDomNode from "@xmldom/is-dom-node";
+import { MIME_TYPE } from "@xmldom/xmldom";
 
 const test_C14nCanonicalization = function (xml, xpathArg, expected) {
-  const doc = new xmldom.DOMParser().parseFromString(xml);
+  const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION) as any as Document;
   const node = xpath.select1(xpathArg, doc);
   const can = new C14nCanonicalization();
 
@@ -22,8 +23,8 @@ const test_C14nCanonicalization = function (xml, xpathArg, expected) {
 };
 
 const test_findAncestorNs = function (xml, xpath, expected) {
-  const doc = new xmldom.DOMParser().parseFromString(xml);
-  const result = utils.findAncestorNs(doc, xpath);
+  const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
+  const result = utils.findAncestorNs(doc as any, xpath);
 
   expect(result).to.deep.equal(expected);
 };

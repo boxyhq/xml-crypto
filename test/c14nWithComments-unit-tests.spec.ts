@@ -5,10 +5,11 @@ import * as xmldom from "@xmldom/xmldom";
 import * as xpath from "xpath";
 import { SignedXml } from "../src/index";
 import * as isDomNode from "@xmldom/is-dom-node";
+import { MIME_TYPE } from "@xmldom/xmldom";
 
 const compare = function (xml, xpathArg, expected, inclusiveNamespacesPrefixList?: string[]) {
-  const doc = new xmldom.DOMParser().parseFromString(xml);
-  const elem = xpath.select1(xpathArg, doc);
+  const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
+  const elem = xpath.select1(xpathArg, doc as any);
   const can = new c14nWithComments();
   isDomNode.assertIsElementNode(elem);
   const result = can.process(elem, { inclusiveNamespacesPrefixList }).toString();
@@ -350,8 +351,9 @@ describe("Exclusive canonicalization with comments", function () {
   it("Multiple Canonicalization with namespace definition outside of signed element", function () {
     const doc = new xmldom.DOMParser().parseFromString(
       '<x xmlns:p="myns"><p:y><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"></ds:Signature></p:y></x>',
+      MIME_TYPE.XML_APPLICATION
     );
-    const node = xpath.select1("//*[local-name(.)='y']", doc);
+    const node = xpath.select1("//*[local-name(.)='y']", doc as any);
     isDomNode.assertIsNodeLike(node);
     const sig = new SignedXml();
     const res = sig.getCanonXml(
@@ -370,8 +372,8 @@ describe("Exclusive canonicalization with comments", function () {
     //   in a document.
     const xml =
       '<x><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" /><y><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" /></y></x>';
-    const doc = new xmldom.DOMParser().parseFromString(xml);
-    const node = xpath.select1("//*[local-name(.)='y']", doc);
+    const doc = new xmldom.DOMParser().parseFromString(xml, MIME_TYPE.XML_APPLICATION);
+    const node = xpath.select1("//*[local-name(.)='y']", doc as any);
     const sig = new SignedXml();
     const transforms = ["http://www.w3.org/2000/09/xmldsig#enveloped-signature"];
     isDomNode.assertIsNodeLike(node);
