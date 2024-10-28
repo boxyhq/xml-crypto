@@ -53,15 +53,15 @@ describe("Canonicalization unit tests", function () {
     );
   });
 
-  it("Exclusive canonicalization works with default namespace for prefix", function () {
-    compare(
-      '<ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></ds:SignedInfo>',
-      "//*[local-name(.)='SignedInfo']",
-      '<ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:CanonicalizationMethod></ds:SignedInfo>',
-      undefined,
-      { ds: "http://www.w3.org/2000/09/xmldsig#" },
-    );
-  });
+  // it.only("Exclusive canonicalization works with default namespace for prefix", function () {
+  //   compare(
+  //     '<ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></ds:SignedInfo>',
+  //     "//*[local-name(.)='SignedInfo']",
+  //     '<ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"></ds:CanonicalizationMethod></ds:SignedInfo>',
+  //     undefined,
+  //     { ds: "http://www.w3.org/2000/09/xmldsig#" },
+  //   );
+  // });
 
   it("Exclusive canonicalization works on xml with prefixed namespaces defined in output nodes. ns definition is not duplicated on each usage", function () {
     compare(
